@@ -1,6 +1,5 @@
 package telran.java41.book.service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,30 +88,39 @@ public class BookServiceImpl implements BookService {
 	public Iterable<AuthorDto> findBookAuthors(Long isbn) {
 		Book book = bookRepository.findById(isbn).orElseThrow(() -> new EntityNotFoundException());
 		return book.getAuthors().stream()
-					.map(a -> modelMapper.map(authorRepository.findById(a.getName()).orElse(null), AuthorDto.class))
+					.map(a -> modelMapper.map(a, AuthorDto.class))
 					.collect(Collectors.toSet());
 	}
 
 	@Override
-	@Transactional(readOnly = true)
+//	@Transactional(readOnly = true)
 	public Iterable<String> findPublishersByAuthor(String authorName) {
-		authorRepository.findById(authorName).orElseThrow(() -> new EntityNotFoundException());
-		return bookRepository.findByAuthorsName(authorName)
-				.map(b -> publisherRepository.findById(b.getPublisher().getPublisherName()).orElse(null))
-				.map(p -> p.getPublisherName())
-				.collect(Collectors.toSet());
+//		Edd's decision:
+		return publisherRepository.findPublisherNameByAuthor(authorName);
+		
+//		My decision:		
+//		authorRepository.findById(authorName).orElseThrow(() -> new EntityNotFoundException());
+//		return bookRepository.findByAuthorsName(authorName)
+//				.map(b -> publisherRepository.findById(b.getPublisher().getPublisherName()).orElse(null))
+//				.map(p -> p.getPublisherName())
+//				.collect(Collectors.toSet());
 	}
 
 	@Override
 	@Transactional
 	public AuthorDto removeAuthor(String authorName) {
 		Author author = authorRepository.findById(authorName).orElseThrow(() -> new EntityNotFoundException());
-		List<Long> isbnList = bookRepository.findByAuthorsName(authorName)
-											.map(b -> b.getIsbn())
-											.collect(Collectors.toList());
-		for (Long isbn : isbnList) {
-			bookRepository.deleteById(isbn);
-		}
+		
+//		Edd's decision:		
+		bookRepository.deleteByAuthorsName(authorName);
+
+//		My decision:	
+//		List<Long> isbnList = bookRepository.findByAuthorsName(authorName)
+//											.map(b -> b.getIsbn())
+//											.collect(Collectors.toList());
+//		for (Long isbn : isbnList) {
+//			bookRepository.deleteById(isbn);
+//		}
 		authorRepository.deleteById(author.getName());
 		return modelMapper.map(author, AuthorDto.class);
 	}
