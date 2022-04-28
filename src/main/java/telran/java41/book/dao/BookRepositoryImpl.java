@@ -8,6 +8,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import telran.java41.book.model.Book;
 
 @Repository
@@ -31,6 +33,7 @@ public class BookRepositoryImpl implements BookRepository {
 	}
 
 	@Override
+	@Transactional
 	public void deleteByAuthorsName(String name) {
 		em.createQuery("select b from Book b join b.authors a where a.name=?1", Book.class)
 		.setParameter(1, name).getResultStream()
